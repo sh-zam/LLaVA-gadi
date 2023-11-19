@@ -72,7 +72,7 @@ class DataArguments:
 
 @dataclass
 class TrainingArguments(transformers.TrainingArguments):
-    cache_dir: Optional[str] = field(default=None)
+    cache_dir: Optional[str] = field(default='/scratch/dg97/sz7583/.cache')
     optim: str = field(default="adamw_torch")
     remove_unused_columns: bool = field(default=False)
     freeze_mm_mlp_adapter: bool = field(default=False)
