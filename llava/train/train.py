@@ -293,7 +293,7 @@ def _add_speaker_and_signal(header, source, get_conversation=True):
         from_str = sentence["from"]
         if from_str.lower() == "human":
             from_str = conversation_lib.default_conversation.roles[0]
-        elif from_str.lower() == "gpt":
+        elif from_str.lower() == "astrollava":
             from_str = conversation_lib.default_conversation.roles[1]
         else:
             from_str = 'unknown'
@@ -335,7 +335,7 @@ def preprocess_llama_2(
     has_image: bool = False
 ) -> Dict:
     conv = conversation_lib.default_conversation.copy()
-    roles = {"human": conv.roles[0], "gpt": conv.roles[1]}
+    roles = {"human": conv.roles[0], "astrollava": conv.roles[1]}
 
     # Apply prompt templates
     conversations = []
@@ -417,7 +417,7 @@ def preprocess_v1(
     has_image: bool = False
 ) -> Dict:
     conv = conversation_lib.default_conversation.copy()
-    roles = {"human": conv.roles[0], "gpt": conv.roles[1]}
+    roles = {"human": conv.roles[0], "astrollava": conv.roles[1]}
 
     # Apply prompt templates
     conversations = []
@@ -503,7 +503,7 @@ def preprocess_mpt(
     has_image: bool = False
 ) -> Dict:
     conv = conversation_lib.default_conversation.copy()
-    roles = {"human": conv.roles[0], "gpt": conv.roles[1]}
+    roles = {"human": conv.roles[0], "astrollava": conv.roles[1]}
 
     # Apply prompt templates
     conversations = []
