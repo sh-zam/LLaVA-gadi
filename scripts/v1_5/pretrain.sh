@@ -2,9 +2,9 @@
 
 deepspeed llava/train/train_mem.py \
     --deepspeed ./scripts/zero2.json \
-    --model_name_or_path /scratch/dg97/sz7583/.cache/models--liuhaotian--llava-v1.5-7b \
+    --model_name_or_path liuhaotian/llava-v1.5-7b \
     --version plain \
-    --data_path /scratch/dg97/sz7583/data-sources/datasets/apod/apod_conversations.json \
+    --data_path /scratch/dg97/sz7583/data-sources/datasets/apod/apod_pretrain.json \
     --image_folder /scratch/dg97/sz7583/data-sources/datasets/apod/ \
     --vision_tower openai/clip-vit-large-patch14-336 \
     --mm_projector_type mlp2x_gelu \
