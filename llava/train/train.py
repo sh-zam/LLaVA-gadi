@@ -33,6 +33,8 @@ from llava.train.llava_trainer import LLaVATrainer
 
 from llava import conversation as conversation_lib
 from llava.model import *
+from llava.model.language_model import *
+from llava import LlavaLlamaForCausalLM
 from llava.mm_utils import tokenizer_image_token
 
 from PIL import Image
@@ -883,6 +885,7 @@ def train(attn_implementation=None):
             padding_side="right"
         )
     else:
+        print("mymodel:", model_args.model_name_or_path)
         tokenizer = transformers.AutoTokenizer.from_pretrained(
             model_args.model_name_or_path,
             cache_dir=training_args.cache_dir,
