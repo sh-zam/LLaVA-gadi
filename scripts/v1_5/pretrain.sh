@@ -2,10 +2,10 @@
 
 deepspeed llava/train/train_mem.py \
     --deepspeed ./scripts/zero2.json \
-    --model_name_or_path liuhaotian/llava-v1.5-7b \
+    --model_name_or_path lmsys/vicuna-7b-v1.5 \
     --version plain \
-    --data_path /scratch/dg97/sz7583/data-sources/datasets/apod/apod_pretrain.json \
-    --image_folder /scratch/dg97/sz7583/data-sources/datasets/apod/ \
+    --data_path /home/szaman/llava-finetuning/multimodapod/multimodapod/data/datasets/merged_conversations.json \
+    --image_folder /home/szaman/llava-finetuning/multimodapod/multimodapod/data/images/ \
     --vision_tower openai/clip-vit-large-patch14-336 \
     --mm_projector_type mlp2x_gelu \
     --tune_mm_mlp_adapter True \
@@ -13,7 +13,7 @@ deepspeed llava/train/train_mem.py \
     --mm_use_im_start_end False \
     --mm_use_im_patch_token False \
     --bf16 True \
-    --output_dir ./checkpoints/astrollava-v1.5-7b-pretrain \
+    --output_dir ./checkpoints/llava-v1.5-13b-pretrain \
     --num_train_epochs 1 \
     --per_device_train_batch_size 32 \
     --per_device_eval_batch_size 4 \
