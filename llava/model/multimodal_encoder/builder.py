@@ -1,5 +1,6 @@
 import os
 from .clip_encoder import CLIPVisionTower, CLIPVisionTowerS2
+import torch
 
 
 def build_vision_tower(vision_tower_cfg, **kwargs):
