@@ -9,11 +9,11 @@ def build_vision_tower(vision_tower_cfg, **kwargs):
     if is_absolute_path_exists or vision_tower.startswith("openai") or vision_tower.startswith("laion") or "ShareGPT4V" in vision_tower:
         if use_s2:
             model = CLIPVisionTowerS2(vision_tower, args=vision_tower_cfg, **kwargs)
-            print('Converting to float32')
-            return model.to(dtype=torch.float32)
+            print('Converting to bfloat16')
+            return model.bfloat16()
         else:
             model = CLIPVisionTower(vision_tower, args=vision_tower_cfg, **kwargs)
-            print('Converting to float32')
-            return model.to(dtype=torch.float32)
+            print('Converting to bfloat16')
+            return model.bfloat16()
 
     raise ValueError(f'Unknown vision tower: {vision_tower}')
