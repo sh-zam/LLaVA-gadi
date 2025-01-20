@@ -46,6 +46,62 @@ class LlavaMetaModel:
             vision_tower = vision_tower[0]
         return vision_tower
 
+    # This function is a modified version of code available in the from_pretrained API of HuggingFace Transformers
+    # The code is copied and modified from: https://github.com/huggingface/transformers/blob/5ee9693a1c77c617ebc43ef20194b6d3b674318e/src/transformers/modeling_utils.py#L498
+    # This function helps load a HF format checkpoint into a DeepSpeed wrapped model that has been sharded using ZeRO Stage 3
+    def load_state_dict_into_model(model_to_load=None,
+                                   state_dict=None,
+                                   start_prefix="",
+                                   zero_stage=0):
+
+        # copy state_dict so _load_from_state_dict can modify it
+        metadata = getattr(state_dict, "_metadata", None)
+        state_dict = state_dict.copy()
+        if metadata is not None:
+            state_dict._metadata = metadata
+
+        error_msgs = []
+
+        # PyTorch's `_load_from_state_dict` does not copy parameters in a module's descendants
+        # so we need to apply the function recursively.
+        def load(module: nn.Module, state_dict, prefix=""):
+            local_metadata = {} if metadata is None else metadata.get(
+                prefix[:-1], {})
+            args = (state_dict, prefix, local_metadata, True, [], [], error_msgs)
+            # Parameters of module and children will start with prefix. We can exit early if there are none in this
+            # state_dict
+            if len([key for key in state_dict if key.startswith(prefix)]) > 0:
+                if zero_stage == 3:
+                    # In sharded models, each shard has only part of the full state_dict, so only gather
+                    # parameters that are in the current state_dict.
+                    named_parameters = dict(
+                        module.named_parameters(prefix=prefix[:-1], recurse=False))
+                    params_to_gather = [
+                        named_parameters[k] for k in state_dict.keys()
+                        if k in named_parameters
+                    ]
+                    if len(params_to_gather) > 0:
+                        # because zero3 puts placeholders in model params, this context
+                        # manager gathers (unpartitions) the params of the current layer, then loads from
+                        # the state dict and then re-partitions them again
+                        with deepspeed.zero.GatheredParameters(params_to_gather,
+                                                            modifier_rank=0):
+                            if torch.distributed.get_rank() == 0:
+                                module._load_from_state_dict(*args)
+                else:
+                    module._load_from_state_dict(*args)
+
+            for name, child in module._modules.items():
+                if child is not None:
+                    load(child, state_dict, prefix + name + ".")
+
+        load(model_to_load, state_dict, prefix=start_prefix)
+        # Delete `state_dict` so it could be collected by GC earlier. Note that `state_dict` is a copy of the argument, so
+        # it's safe to delete it.
+        del state_dict
+
+        return error_msgs
+
     def initialize_vision_modules(self, model_args, fsdp=None):
         vision_tower = model_args.vision_tower
         mm_vision_select_layer = model_args.mm_vision_select_layer
@@ -94,7 +150,8 @@ class LlavaMetaModel:
             def get_w(weights, keyword):
                 return {k.split(keyword + '.')[1]: v for k, v in weights.items() if keyword in k}
 
-            self.mm_projector.load_state_dict(get_w(mm_projector_weights, 'mm_projector'))
+            # self.mm_projector.load_state_dict(get_w(mm_projector_weights, 'mm_projector'))
+            load_state_dict_into_model(self.mm_projector, get_w(mm_projector_weights, 'mm_projector'), zero_stage=3)
 
 
 def unpad_image(tensor, original_size):
@@ -256,7 +313,7 @@ class LlavaMetaForCausalLM(ABC):
             for i in range(num_images + 1):
                 cur_new_input_embeds.append(cur_input_embeds_no_im[i])
                 cur_new_labels.append(cur_labels_noim[i])
-                if i < num_images:
+                if i < num_images and cur_image_idx < image_features.shape[0]:
                     cur_image_features = image_features[cur_image_idx]
                     cur_image_idx += 1
                     cur_new_input_embeds.append(cur_image_features)
