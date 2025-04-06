@@ -2,10 +2,10 @@
 
 deepspeed llava/train/train_mem.py \
     --deepspeed ./scripts/zero3.json \
-    --model_name_or_path /home/szaman/llava-finetuning/llava-v1.5-7b \
+    --model_name_or_path llava-hf/llava-1.5-7b-hf \
     --version v1 \
-    --data_path /home/szaman/llava-finetuning/multimodapod/multimodapod/data/datasets/merged_conversation2.json \
-    --image_folder /home/szaman/llava-finetuning/multimodapod/multimodapod/data/images/ \
+    --data_path /data/szaman/llava-finetuning/multimodapod/multimodapod/data/datasets/merged_conversations2.json \
+    --image_folder /data/szaman/llava-finetuning/multimodapod/multimodapod/data/images/ \
     --vision_tower openai/clip-vit-large-patch14-336 \
     --mm_projector_type mlp2x_gelu \
     --mm_vision_select_layer -2 \
@@ -14,11 +14,12 @@ deepspeed llava/train/train_mem.py \
     --image_aspect_ratio pad \
     --group_by_modality_length True \
     --bf16 True \
-    --output_dir ./checkpoints/astrollava-7b-final \
+    --output_dir ./checkpoints/astrollava-7b-llava_hf \
+    --pretrain_mm_mlp_adapter checkpoints/astrollava-v1.5-7b-pretrain/mm_projector.bin \
     --num_train_epochs 1 \
-    --per_device_train_batch_size 16 \
+    --per_device_train_batch_size 4 \
     --per_device_eval_batch_size 4 \
-    --gradient_accumulation_steps 1 \
+    --gradient_accumulation_steps 4 \
     --evaluation_strategy "no" \
     --save_strategy "steps" \
     --save_steps 50000 \
@@ -34,8 +35,6 @@ deepspeed llava/train/train_mem.py \
     --dataloader_num_workers 4 \
     --lazy_preprocess True \
     --report_to none
-
-    # --pretrain_mm_mlp_adapter checkpoints/llava-v1.5-7b-pretrain/mm_projector.bin \
 # #!/bin/bash
 # 
 # deepspeed llava/train/train_mem.py \

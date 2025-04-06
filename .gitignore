@@ -37,3 +37,5 @@ serve_images/
 flash-attention/
 flash-attention/**
 myvenv/*
+output.txt
+results/*
